@@ -208,6 +208,56 @@ and should not be set directly by the user.
 </directive>
 
 
+<directive name="epoll_busy_poll">
+<syntax>
+    <value>usecs</value>
+    [<literal>budget</literal>=<value>number</value>]
+    [<literal>prefer_busy_poll</literal>]</syntax>
+<default/>
+<context>events</context>
+
+<para>
+When using the <link doc="../docs/events.xml" id="epoll"/>
+connection processing method, enables
+<link url="https://docs.kernel.org/networking/napi.html">NAPI busy polling</link>
+of the network device for up to <value>usecs</value> microseconds
+while waiting for events.
+This may reduce network latency at the cost of increased CPU usage.
+The feature requires Linux 6.9 or later;
+if the operating system does not support the operation,
+a warning is logged and busy polling is not enabled.
+</para>
+
+<para>
+The optional <literal>budget</literal> parameter sets the maximum number
+of packets processed in a single polling cycle.
+By default, or when set to <literal>0</literal>, the kernel default is used.
+Values greater than 64 require the <literal>CAP_NET_ADMIN</literal>
+capability, which worker processes normally do not have.
+</para>
+
+<para>
+The optional <literal>prefer_busy_poll</literal> parameter enables
+busy poll interrupt suspension.
+This has effect only on Linux 6.13 or later, and additionally requires the
+network device’s <literal>napi_defer_hard_irqs</literal> and
+<literal>gro_flush_timeout</literal> parameters to be configured.
+</para>
+
+<para>
+Busy polling is most effective when a worker process handles connections
+from a single network receive queue,
+for example by using the
+<link doc="http/ngx_http_core_module.xml" id="reuseport">reuseport</link>
+parameter of the
+<link doc="http/ngx_http_core_module.xml" id="listen">listen</link>
+directive, along with <link id="worker_cpu_affinity"/>
+and matching network device interrupt affinity.
+</para>
+
+</directive>
+
+
 <directive name="error_log">
 <syntax><value>file</value> [<value>level</value>]
 [<literal>json</literal>]</syntax>
